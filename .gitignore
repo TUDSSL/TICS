@@ -1,0 +1,7 @@
+# vim swap files
+*.swp
+
+# LLVM build files
+llvm-tics/install
+llvm-tics/llvm-tics-build
+llvm-tics/llvm
