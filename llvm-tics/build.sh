@@ -52,7 +52,7 @@ popd
 # Build LLVM
 echo "Building LLVM"
 pushd llvm-tics-build
-make -j2
+make -j$(nproc)
 #make ocaml_doc
 popd
 
