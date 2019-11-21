@@ -1,7 +1,24 @@
-# vim swap files
+## vim swap files
 *.swp
 
-# LLVM build files
+## LLVM build files
 llvm-tics/install
 llvm-tics/llvm-tics-build
 llvm-tics/llvm
+
+## MSP430-GCC build files
+
+# Sources that are in the tarball
+msp430-gcc-tics/msp430-gcc-7.3.1.24-source-full/*
+
+# Sources that are in the git repo
+!msp430-gcc-tics/msp430-gcc-7.3.1.24-source-full/gcc
+!msp430-gcc-tics/msp430-gcc-7.3.1.24-source-full/gcc/*
+
+# Sources updated building
+msp430-gcc-tics/msp430-gcc-7.3.1.24-source-full/gcc/libgloss
+msp430-gcc-tics/msp430-gcc-7.3.1.24-source-full/gcc/newlib
+
+# The tarball downloaded by download-sources.sh
+msp430-gcc-tics/msp430-gcc-7.3.1.24-source-full.tar.bz2
+
