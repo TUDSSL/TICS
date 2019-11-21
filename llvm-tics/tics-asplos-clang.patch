@@ -1,0 +1,47 @@
+diff --git a/include/clang/Basic/Attr.td b/include/clang/Basic/Attr.td
+index 4b8a7b71f9..8469b15f4b 100644
+--- a/include/clang/Basic/Attr.td
++++ b/include/clang/Basic/Attr.td
+@@ -845,6 +845,12 @@ def MSP430Interrupt : InheritableAttr, TargetSpecificAttr<TargetMSP430> {
+   let Documentation = [Undocumented];
+ }
+ 
++def MSP430Segstack : InheritableAttr, TargetSpecificAttr<TargetMSP430> {
++  let Spellings = [GNU<"segstack">];
++  let Subjects = SubjectList<[Function]>;
++  let Documentation = [Undocumented];
++}
++
+ def Mips16 : InheritableAttr, TargetSpecificAttr<TargetMips> {
+   let Spellings = [GCC<"mips16">];
+   let Subjects = SubjectList<[Function], ErrorDiag>;
+diff --git a/lib/CodeGen/CGCall.cpp b/lib/CodeGen/CGCall.cpp
+index f4cd314550..1e06c901be 100644
+--- a/lib/CodeGen/CGCall.cpp
++++ b/lib/CodeGen/CGCall.cpp
+@@ -1415,6 +1415,11 @@ void CodeGenModule::ConstructAttributeList(const CGFunctionInfo &FI,
+     if (TargetDecl->hasAttr<NoDuplicateAttr>())
+       FuncAttrs.addAttribute(llvm::Attribute::NoDuplicate);
+ 
++    // VISP segstack
++    if (TargetDecl->hasAttr<MSP430SegstackAttr>()) {
++        FuncAttrs.addAttribute("segstack");
++    }
++
+     if (const FunctionDecl *Fn = dyn_cast<FunctionDecl>(TargetDecl)) {
+       const FunctionProtoType *FPT = Fn->getType()->getAs<FunctionProtoType>();
+       if (FPT && !isUnresolvedExceptionSpec(FPT->getExceptionSpecType()) &&
+diff --git a/lib/Sema/SemaDeclAttr.cpp b/lib/Sema/SemaDeclAttr.cpp
+index 9bbd5b2c3f..b63cb6d9fb 100644
+--- a/lib/Sema/SemaDeclAttr.cpp
++++ b/lib/Sema/SemaDeclAttr.cpp
+@@ -4609,6 +4609,9 @@ static void ProcessDeclAttribute(Sema &S, Scope *scope, Decl *D,
+     // Type attributes are handled elsewhere; silently move on.
+     assert(Attr.isTypeAttr() && "Non-type attribute not handled");
+     break;
++  case AttributeList::AT_MSP430Segstack:
++    handleSimpleAttribute<MSP430SegstackAttr>(S, D, Attr);
++    break;
+   case AttributeList::AT_Interrupt:
+     handleInterruptAttr(S, D, Attr);
+     break;

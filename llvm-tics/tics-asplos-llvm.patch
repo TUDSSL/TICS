@@ -1,0 +1,249 @@
+diff --git a/lib/Target/MSP430/MSP430CallingConv.td b/lib/Target/MSP430/MSP430CallingConv.td
+index b38f5781c84..0434f8abfbf 100644
+--- a/lib/Target/MSP430/MSP430CallingConv.td
++++ b/lib/Target/MSP430/MSP430CallingConv.td
+@@ -13,11 +13,11 @@
+ // MSP430 Return Value Calling Convention
+ //===----------------------------------------------------------------------===//
+ def RetCC_MSP430 : CallingConv<[
+-  // i8 are returned in registers R15B, R14B, R13B, R12B
+-  CCIfType<[i8], CCAssignToReg<[R15B, R14B, R13B, R12B]>>,
++  // i8 are returned in registers R12B, R13B, R14B, R15B
++  CCIfType<[i8], CCAssignToReg<[R12B, R13B, R14B, R15B]>>,
+ 
+-  // i16 are returned in registers R15, R14, R13, R12
+-  CCIfType<[i16], CCAssignToReg<[R15, R14, R13, R12]>>
++  // i16 are returned in registers R12, R13, R14, R15
++  CCIfType<[i16], CCAssignToReg<[R12, R13, R14, R15]>>
+ ]>;
+ 
+ //===----------------------------------------------------------------------===//
+diff --git a/lib/Target/MSP430/MSP430FrameLowering.cpp b/lib/Target/MSP430/MSP430FrameLowering.cpp
+index eb720809e47..f92a7caf502 100644
+--- a/lib/Target/MSP430/MSP430FrameLowering.cpp
++++ b/lib/Target/MSP430/MSP430FrameLowering.cpp
+@@ -25,6 +25,8 @@
+ #include "llvm/Support/CommandLine.h"
+ #include "llvm/Target/TargetOptions.h"
+ 
++std::list<std::string> labels;
++
+ using namespace llvm;
+ 
+ bool MSP430FrameLowering::hasFP(const MachineFunction &MF) const {
+@@ -39,6 +41,11 @@ bool MSP430FrameLowering::hasReservedCallFrame(const MachineFunction &MF) const
+   return !MF.getFrameInfo()->hasVarSizedObjects();
+ }
+ 
++// Additional frame size for the segmented stack
++//  2 bytes for the argument size on the stack
++//  2 bytes for the stack frame size
++#define SEGMENTED_STACK_FRAME_SIZE (2+2)
++
+ void MSP430FrameLowering::emitPrologue(MachineFunction &MF,
+                                        MachineBasicBlock &MBB) const {
+   assert(&MF.front() == &MBB && "Shrink-wrapping not yet supported");
+@@ -52,6 +59,32 @@ void MSP430FrameLowering::emitPrologue(MachineFunction &MF,
+ 
+   // Get the number of bytes to allocate from the FrameInfo.
+   uint64_t StackSize = MFI->getStackSize();
++  //StackSize += SEGMENTED_STACK_FRAME_SIZE; // segstack
++
++  // Print function attribute if any
++  const Function *fn = MF.getFunction();
++  if (fn->hasFnAttribute("segstack")) {
++      //Attribute attr = fn->getFnAttribute("segstack");
++      dbgs() << "Segstack Fn: " << MF.getName() << " argsize: " << MSP430FI->getArgumentStackSize() << "\n";
++
++      unsigned func_nr = MF.getFunctionNumber();
++      std::string wss_label_1 = ".L_WSS_1_f";
++      wss_label_1 += std::to_string(func_nr);
++      labels.push_back(wss_label_1);
++      const char *wss_label_1_c_str = labels.back().c_str();
++
++      std::string wss_label_2 = ".L_WSS_2_f";
++      wss_label_2 += std::to_string(func_nr);
++      labels.push_back(wss_label_2);
++      const char *wss_label_2_c_str = labels.back().c_str();
++
++      MachineInstr *MIs;
++      MIs = BuildMI(MBB, MBBI, DL, TII.get(MSP430::StackSegSmall))
++          .addImm(StackSize).addImm(MSP430FI->getArgumentStackSize())
++          .addExternalSymbol(wss_label_1_c_str).addExternalSymbol(wss_label_2_c_str);
++
++  }
++
+ 
+   uint64_t NumBytes = 0;
+   if (hasFP(MF)) {
+@@ -80,6 +113,26 @@ void MSP430FrameLowering::emitPrologue(MachineFunction &MF,
+   } else
+     NumBytes = StackSize - MSP430FI->getCalleeSavedFrameSize();
+ 
++  /* Seg-stack
++         PUSHM.A	#1,r12
++         MOV.A	r1, r12
++         SUBA    %0, r12
++         CMPX.A  &__workingstack_limit, r12
++         JGE 1f
++         PUSHM.A #1, r13
++         MOV.A   %1, r13
++         CALLA #__workingstack_swap
++         MOV.A 8(sp), r12
++         MOV.A @sp, r13
++         MOV.A r13, 8(sp)
++         MOV.A 4(sp), r13
++         ADDA #8, sp
++         JMP 2f
++    1:  POPM.A #1, r12
++    2:
++    */
++  // MF.getFunctionNumber()
++
+   // Skip the callee-saved push instructions.
+   while (MBBI != MBB.end() && (MBBI->getOpcode() == MSP430::PUSH16r))
+     ++MBBI;
+@@ -125,6 +178,7 @@ void MSP430FrameLowering::emitEpilogue(MachineFunction &MF,
+ 
+   // Get the number of bytes to allocate from the FrameInfo
+   uint64_t StackSize = MFI->getStackSize();
++  //StackSize += SEGMENTED_STACK_FRAME_SIZE; // segstack
+   unsigned CSSize = MSP430FI->getCalleeSavedFrameSize();
+   uint64_t NumBytes = 0;
+ 
+diff --git a/lib/Target/MSP430/MSP430ISelLowering.cpp b/lib/Target/MSP430/MSP430ISelLowering.cpp
+index d1d1cdb86fe..0ac55c35c5c 100644
+--- a/lib/Target/MSP430/MSP430ISelLowering.cpp
++++ b/lib/Target/MSP430/MSP430ISelLowering.cpp
+@@ -280,7 +280,8 @@ static void AnalyzeArguments(CCState &State,
+                              SmallVectorImpl<CCValAssign> &ArgLocs,
+                              const SmallVectorImpl<ArgT> &Args) {
+   static const MCPhysReg RegList[] = {
+-    MSP430::R15, MSP430::R14, MSP430::R13, MSP430::R12
++    //MSP430::R15, MSP430::R14, MSP430::R13, MSP430::R12
++    MSP430::R12, MSP430::R13, MSP430::R14, MSP430::R15
+   };
+   static const unsigned NbRegs = array_lengthof(RegList);
+ 
+@@ -513,6 +514,12 @@ MSP430TargetLowering::LowerCCCArguments(SDValue Chain,
+       InVals.push_back(InVal);
+     }
+   }
++  //iikoe
++  // Get the size of the arguments pushed on the stack
++  FuncInfo->setArgumentStackSize(CCInfo.getNextStackOffset());
++  //dbgs() << "Fn: " << MF.getFunctionNumber() << " name: " << MF.getName() << " argsize: " << CCInfo.getNextStackOffset() << "\n";
++  //iikoe
++
+ 
+   return Chain;
+ }
+diff --git a/lib/Target/MSP430/MSP430InstrInfo.td b/lib/Target/MSP430/MSP430InstrInfo.td
+index c0c29b99223..9e4550069dd 100644
+--- a/lib/Target/MSP430/MSP430InstrInfo.td
++++ b/lib/Target/MSP430/MSP430InstrInfo.td
+@@ -232,6 +232,52 @@ def POP16r   : IForm16<0x0, DstReg, SrcPostInc, Size2Bytes,
+ let mayStore = 1 in
+ def PUSH16r  : II16r<0x0,
+                      (outs), (ins GR16:$reg), "push.w\t$reg",[]>;
++
++let mayStore = 1 in
++def StackSeg  : II16r<0x0,
++                     (outs), (ins i16imm:$framesize, i16imm:$argsize, jmptarget:$label1, jmptarget:$label2),
++                     "pushm.a #1, r12 \n\t"
++                     "mov.a r1, r12 \n\t"
++                     "suba $framesize, r12 \n\t"
++                     "cmpx.a &__workingstack_limit, r12 \n\t"
++                     "jge $label1 \n\t"
++                     "pushm.a #1, 13 \n\t"
++                     "mov.a $argsize, r13 \n\t"
++                     "calla #__workingstack_swap \n\t"
++                     "mov.a 8(sp), r12 \n\t"
++                     "mov.a @sp, r13 \n\t"
++                     "mov.a r13, 8(sp) \n\t"
++                     "mov.a 4(sp), r13 \n\t"
++                     "adda #8, sp \n\t"
++                     "jmp $label2 \n\t"
++                     "$label1: \n\t"
++                     "popm.a #1, r12 \n\t"
++                     "$label2: \n\t"
++                     ,
++                     []>;
++
++let mayStore = 1 in
++def StackSegSmall  : II16r<0x0,
++                     (outs), (ins i16imm:$framesize, i16imm:$argsize, jmptarget:$label1, jmptarget:$label2),
++                     "pushm.w #1, r12 \n\t"
++                     "mov.w r1, r12 \n\t"
++                     "sub.w $framesize, r12 \n\t"
++                     "cmp.w &__workingstack_limit, r12 \n\t"
++                     "jge $label1 \n\t"
++                     "pushm.w #1, 13 \n\t"
++                     "mov.w $argsize, r13 \n\t"
++                     "call #__workingstack_swap \n\t"
++                     "mov.w 4(sp), r12 \n\t"
++                     "mov.w @sp, r13 \n\t"
++                     "mov.w r13, 4(sp) \n\t"
++                     "mov.w 2(sp), r13 \n\t"
++                     "add.w #4, sp \n\t"
++                     "jmp $label2 \n\t"
++                     "$label1: \n\t"
++                     "popm.w #1, r12 \n\t"
++                     "$label2: \n\t"
++                     ,
++                     []>;
+ }
+ 
+ //===----------------------------------------------------------------------===//
+@@ -970,6 +1016,23 @@ def SAR16r1c : Pseudo<(outs GR16:$dst), (ins GR16:$src),
+                       [(set GR16:$dst, (MSP430rrc GR16:$src)),
+                        (implicit SR)]>;
+ 
++// stackseg
++//def StackSeg : Pseudo<(outs), (ins i16imm:$src, i16imm:$src2),
++//                      "PUSHM.A  #1,r12\n\t"
++//                      "MOV.A	r1, r12\n\t"
++//                      "SUBA    $src, r12\n\t"
++//                      "MOV.A   $src2, r13",
++//                      [(implicit SR)]>;
++
++let Defs = [SP], Uses = [SP], hasSideEffects=0 in {
++//let mayStore = 1 in
++//def StackSeg  : II16i<0x0,
++//                     (outs), (ins i16imm:$src), "pushm.a\t$src,r12",[]>;
++//let mayStore = 1 in
++//def StackSeg  : II16r<0x0,
++//                     (outs), (ins GR16:$reg), "pushm.a\t$reg",[]>;
++}
++
+ // FIXME: Memory sext's ?
+ def SEXT16r : II16r<0x0,
+                     (outs GR16:$dst), (ins GR16:$src),
+diff --git a/lib/Target/MSP430/MSP430MachineFunctionInfo.h b/lib/Target/MSP430/MSP430MachineFunctionInfo.h
+index 2d937318c7e..5ee3d185d7b 100644
+--- a/lib/Target/MSP430/MSP430MachineFunctionInfo.h
++++ b/lib/Target/MSP430/MSP430MachineFunctionInfo.h
+@@ -33,6 +33,12 @@ class MSP430MachineFunctionInfo : public MachineFunctionInfo {
+   /// VarArgsFrameIndex - FrameIndex for start of varargs area.
+   int VarArgsFrameIndex;
+ 
++  /// iikoe
++  /// ArgumentStackSize - amount of bytes on stack consumed by the arguments
++  /// being passed on the stack
++  unsigned ArgumentStackSize;
++
++
+ public:
+   MSP430MachineFunctionInfo() : CalleeSavedFrameSize(0) {}
+ 
+@@ -47,6 +53,10 @@ public:
+ 
+   int getVarArgsFrameIndex() const { return VarArgsFrameIndex;}
+   void setVarArgsFrameIndex(int Index) { VarArgsFrameIndex = Index; }
++
++  //iikoe
++  unsigned getArgumentStackSize() const { return ArgumentStackSize; }
++  void setArgumentStackSize(unsigned size) { ArgumentStackSize = size; }
+ };
+ 
+ } // End llvm namespace
