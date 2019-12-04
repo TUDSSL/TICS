@@ -1,0 +1,9 @@
+This library provides a uniform interface to different I/O backends
+
+The I/O backends supported are:
+ * libmspconsole (poorly named): hardware UART module on MSP430
+ * libmspsoftuart (aka. msp430-softuart): software UART using GPIO+Timer on MSP430
+ * libedb: proxy output via the connection to EDB (Energy-interference-free Debugger)
+
+With the help of this library, the backend can be switched with a
+switch variable in the build config without any change to the code.

@@ -1,0 +1,48 @@
+# Crystal hw specs
+# LIBMSP_XT1_FREQ ?= <no default>
+# LIBMSP_XT1_CAP ?= <no default>
+# LIBMSP_XT2_FREQ ?= <no default>
+
+# Frequency of the internal oscillator (constant and MCU-specific)
+LIBMSP_REFO_FREQ ?= 32768
+
+# Main clock source: available options DCO,XT1,XT2
+LIBMSP_CLOCK_SOURCE ?= DCO
+
+# DCO settings: applicable when LIBMSP_CLOCK_SOURCE is DCO
+LIBMSP_DCO_REF_SOURCE ?= REFO
+LIBMSP_DCO_REF_CLOCK_DIV ?= 1
+# LIBMSP_DCO_FREQ ?= <no default>
+
+# Clock dividers for main, secondary, and auxiliary clocks
+LIBMSP_MCLK_DIV ?= 1
+LIBMSP_SMCLK_DIV ?= 1
+LIBMSP_ACLK_DIV ?= 1
+
+# Workarounds for the MCU crashes due to voltage ramp on startup
+# Value is a space-separated list of one or more of the following:
+#  * disable-pmm : disable PMM module
+#  * delay : a long delay after boot
+#
+# The problem these work around is crashes that occur at arbitrary times after
+# startup. The crash is either a wild jump or an oscillator fault.
+#
+# At first glance crashes are somewhat consistent and seem correlated to
+# peripheral activity. For example, not doing anything with the UART might seem
+# to get rid of the crash, or, even stranger, re-arranging C-code, like
+# removing code that's in an if-branch that is never taken, or replacing a
+# function call with an inline invocation, all appear to consistently influence
+# whether a crash happens or not.
+#
+# However, the underlying issue is traced to some kind of non-fail-stop failure
+# during startup that corrupts subsequent execution. Furthermore, the problem
+# has to do with the Power Management Module -- it either generates false
+# events (like overvoltage), or does not generate correct events in time. In
+# particular, there are multiple errata about it, including a false overvoltage
+# even if voltage ramps up too quickly.
+#
+# This is might be related to erratum about PMM tripping incorrectly.
+#
+# NOTE: Unfortunately, these workarounds do not get rid of the same kind of
+#  		crash that happens with debugger attached (either CCSv6 or mspdebug).
+LIBMSP_STARTUP_VOLTAGE_WORKAROUNDS ?=

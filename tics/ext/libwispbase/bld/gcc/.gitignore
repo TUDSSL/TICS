@@ -1,0 +1,12 @@
+*.d
+*.o
+*.a
+
+Math/
+RFID/
+Sensors/
+Timing/
+internals/
+nvm/
+rand/
+wired/

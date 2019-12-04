@@ -1,0 +1,12 @@
+# Can't use DEPS facility for these because the toolchain has to be GCC
+ifeq ($(TOOLCHAIN),clang)
+
+override CFLAGS += -I$(LIB_ROOT)/libmspprintf/src/include
+override LFLAGS += -L$(LIB_ROOT)/libmspprintf/bld/gcc
+override LIBS += -lmspprintf
+
+else # TOOLCHAIN != gcc
+
+override DEPS += libmspprintf
+
+endif # TOOLCHAIN != gcc

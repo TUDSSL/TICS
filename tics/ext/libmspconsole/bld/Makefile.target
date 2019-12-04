@@ -1,0 +1,12 @@
+# Can't use DEPS facility for these because the toolchain has to be GCC
+ifeq ($(TOOLCHAIN),gcc)
+
+override DEPS += libmspconsole
+
+else # TOOLCHAIN != gcc
+
+override CFLAGS += -I$(LIB_ROOT)/libmspconsole/src/include
+override LFLAGS += -L$(LIB_ROOT)/libmspconsole/bld/gcc
+override LIBS += -lmspconsole
+
+endif # TOOLCHAIN != gcc

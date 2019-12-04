@@ -1,0 +1,11 @@
+ifeq ($(TOOLCHAIN),gcc)
+override DEPS += libwispbase
+else # TOOLCHAIN != gcc
+
+# libedb is special because it has to be compiled by GCC, not Clang,
+# even if the app is built with Clang
+override CFLAGS += -I$(LIB_ROOT)/libwispbase/src/include
+override LFLAGS += -L$(LIB_ROOT)/libwispbase/bld/gcc
+override LIBS += -lwispbase
+
+endif # TOOLCHAIN != gcc

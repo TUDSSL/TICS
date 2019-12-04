@@ -1,0 +1,6 @@
+A small printf implementation for MSP430.
+Source by oPossum from here:
+http://forum.43oh.com/topic/1289-tiny-printf-c-version/#entry10652
+
+NOTE: We are not using the libc printf because it's huge:
+https://e2e.ti.com/support/development_tools/compiler/f/343/t/442632

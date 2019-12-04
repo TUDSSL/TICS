@@ -1,0 +1,15 @@
+# Can't unconditionally use maker's DEPS facility for this lib, because the lib
+# must be built with gcc even when linked into a Clang-built binary.
+ifeq ($(TOOLCHAIN),clang)
+CFLAGS += -I$(LIB_ROOT)/libmspbuiltins/src/include
+LFLAGS += -L$(LIB_ROOT)/libmspbuiltins/bld/gcc
+LIBS += -lmspbuiltins
+else # TOOLCHAIN != gcc
+
+# libedb is special because it has to be compiled by GCC, not Clang,
+# even if the app is built with Clang
+DEPS += libmspbuiltins
+
+endif # TOOLCHAIN != gcc
+
+

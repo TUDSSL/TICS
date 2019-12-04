@@ -1,0 +1,2 @@
+Library of MSP430 math functions to work around unimplemented intrinsics in
+Clang.

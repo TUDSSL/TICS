@@ -1,0 +1,7 @@
+#!/bin/bash
+
+[ -d build ] || mkdir build
+pushd build
+#cmake -DCMAKE_TOOLCHAIN_FILE=arch/msp430x/msp430-toolchain.cmake ../
+cmake -DCMAKE_TOOLCHAIN_FILE=arch/msp430x/msp430-toolchain-ws.cmake ../
+popd
