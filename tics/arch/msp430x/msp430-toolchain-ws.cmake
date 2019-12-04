@@ -8,13 +8,12 @@ string(TOUPPER ${DEVICE} DEVICE_DEFINE)
 set(DEVICE_DEFINE "__${DEVICE_DEFINE}__")
 
 # Clang/LLVM location
-#set(LLVM_TOOLS_BINARY_DIR   "/opt/llvm-int/bin")
-set(LLVM_TOOLS_BINARY_DIR   "/home/iikoe/devel/msp430-llvm/llvm-visp/src/llvm-build/bin")
+set(LLVM_TOOLS_BINARY_DIR   "/home/user/msp430-llvm/llvm-visp/src/llvm-build/bin")
 
 # MSP430 support files (installation dependent)
 set(PATH_MSP430_SUPPORT "/opt/msp430-gcc-support-files/include" CACHE STRING "")
-set(PATH_MSP430_LIB "/home/iikoe/devel/msp430-gcc/msp430-gcc-7.3.1.24-source-full/install/usr/local/msp430-elf" CACHE STRING "")
-set(PATH_MSP430_GCC "/home/iikoe/devel/msp430-gcc/msp430-gcc-7.3.1.24-source-full/install/usr/local/bin" CACHE STRING "")
+set(PATH_MSP430_LIB "/home/user/msp430-gcc/msp430-gcc-7.3.1.24-source-full/install/usr/local/msp430-elf" CACHE STRING "")
+set(PATH_MSP430_GCC "/home/user/msp430-gcc/msp430-gcc-7.3.1.24-source-full/install/usr/local/bin" CACHE STRING "")
 
 # Device specific driverlib
 set(PATH_MSP430_DRIVERS "${PROJECT_SOURCE_DIR}/arch/msp430x/lib/MSP430FR5xx_6xx" CACHE STRING "")
