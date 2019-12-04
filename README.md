@@ -107,6 +107,16 @@ The benchmarks where uploaded using [Code Composer Studio (CCS)](http://www.ti.c
 Benchmark timings where started after the system initialization (`init()`) and where run until the end of the benchmarks (before result validation and the summary of the run).
 The time was measured using hardware breakpoints and the build in cycle counter.
 
+#### System Comparisons
+The system was benchmarked against
+* [InK](https://github.com/TUDSSL/InK)
+* Alpaca
+* MayFly
+* [Chinchilla](https://github.com/CMUAbstract/chinchilla)
+
+The performance numbers for InK, Alpaca and MayFly where extracted from the [InK paper](https://dl.acm.org/citation.cfm?id=3274837). The performance numbers for Chinchilla where obtained by running the benchmarks using the Chinchilla library and compiler on our setup and using the same cycle counter technique as described above.
+
+
 ## Paper
 
 To cite the paper where TICS is being introduced please use the following LaTeX bibitem.
