@@ -38,7 +38,7 @@ The main components of TICS are:
 $ apt-get install make gcc g++ libc-dev flex bison texinfo ncurses-dev zlib1g-dev bash curl
 ```
 
-**Build command:**
+**Build commands:**
 ```bash
 $ cd msp430-gcc-tics
 $ ./build.sh
@@ -51,7 +51,7 @@ $ ./build.sh
 $ apt-get install make gcc cmake python zlib1g-dev
 ```
 
-**Build command:**
+**Build commands:**
 ```bash
 $ cd llvm-tics
 $ ./build.sh
@@ -68,8 +68,17 @@ From Texas Instruments download and extract the [MSP430 GCC support files](http:
 
 
 ### Building C Code
+**Path setup**
 Modify the CMake target configuration file [tics/arch/msp430x/msp430-toolchain-ws.cmake](tics/arch/msp430x/msp430-toolchain-ws.cmake) such that the correct paths are configured for GCC, LLVM, libraries and the support files.
-This can be done by changing all the paths strating with `/home/user`.
+This can be done by changing all the paths starting with `/home/user`.
+
+**Build commands:**
+```bash
+$ cd tics
+$ ./configure
+$ cd build
+$ make
+```
 
 ## Paper
 ```

@@ -11,21 +11,6 @@ include_directories("${INCLUDE_DIRS}")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
-# TODO Verify for stackpool stack blocks
-#add_executable("ftest_checkpoint"
-#    "${PROJECT_SOURCE_DIR}/test/functional/checkpoint/ftest_checkpoint.c"
-#    "${PROJECT_SOURCE_DIR}/src/checkpoint.c"
-#    "${PROJECT_SOURCE_DIR}/src/virtualmem.c"
-#    "${SOURCE_FILES}"
-#    )
-
-# TODO fix for virtualmem
-#add_executable("ftest_crc_checkpoint"
-#    "${PROJECT_SOURCE_DIR}/test/functional/checkpoint/ftest_crc_checkpoint.c"
-#    "${PROJECT_SOURCE_DIR}/src/checkpoint.c"
-#    "${SOURCE_FILES}"
-#    )
-
 add_executable("ftest_workingsack"
     "${PROJECT_SOURCE_DIR}/test/functional/checkpoint/ftest_workingstack.c"
     "${PROJECT_SOURCE_DIR}/src/checkpoint.c"
