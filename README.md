@@ -73,7 +73,7 @@ From Texas Instruments website download and extract the [MSP430 GCC support file
 
 
 ### Building Source Instrumentation Tool
-The source instrumentation tool is located in [tics/source-instrumentation/memory-log-instrumentation](tics/source-instrumentation/memory-log-instrumentation/).
+The source instrumentation tool (`memlog`) is located in [tics/source-instrumentation/memory-log-instrumentation](tics/source-instrumentation/memory-log-instrumentation/).
 This tool is used to instrument global variable and pointer writes.
 
 **Build commands**:
