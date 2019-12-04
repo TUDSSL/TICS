@@ -1,10 +1,9 @@
-# TICS
-### Time-sensitive Intermittent Computing Meets Legacy Software
+# Time-sensitive Intermittent Computing Meets Legacy Software (TICS)
 
-TICS is a framework that allows for programs to be executed on intermittent power harvested from the environment.
-TICS consists of multiple components that together make sure that the program that is being executed continues where it left off after a power failure. Additionally TICS does this in a way that leads to checkpoint times that can be bounded to a reasonable upper limit, making reasoning about checkpoint placement dynamically possible (although this is not explored in the current version).
+TICS is a framework that allows for C programs to be executed on intermittent power, harvested from the environment.
+TICS consists of multiple components that together make sure that the program that is being executed continues where it left off after a power failure. Additionally, TICS does this in a way that leads to checkpoint times that can be bounded to a reasonable upper limit, making reasoning about checkpoint placement dynamically possible (although this is not explored in the current version).
 
-TICS is intended to be used with the [MSP430FR5969](http://www.ti.com/product/MSP430FR5969) microcontroller, but can be adapted to work with any MSP based microcontroller that consists of non-volatile main memory.
+TICS is intended to be used with the [MSP430FR5969](http://www.ti.com/product/MSP430FR5969) microcontroller, but can be adapted to work with any MSP-based microcontroller that consists of non-volatile main memory.
 
 The main components of TICS are:
 * **TICS runtime** for memory logging and checkpoint management
@@ -30,7 +29,8 @@ The main components of TICS are:
 ```
 
 ## Usage
-**Tested on Ubuntu 18.04**
+
+TICS was **tested on Ubuntu 18.04**
 
 ### Building GCC
 **Required packages:**
@@ -64,13 +64,12 @@ $ ./setup.sh
 ```
 
 ### Installing MSP430 Support Files
-From Texas Instruments download and extract the [MSP430 GCC support files](http://software-dl.ti.com/msp430/msp430_public_sw/mcu/msp430/MSPGCC/latest/exports/msp430-gcc-support-files-1.208.zip)
+From Texas Instruments website download and extract the [MSP430 GCC support files](http://software-dl.ti.com/msp430/msp430_public_sw/mcu/msp430/MSPGCC/latest/exports/msp430-gcc-support-files-1.208.zip)
 
 
 ### Building C Code
 **Path setup**
-Modify the CMake target configuration file [tics/arch/msp430x/msp430-toolchain-ws.cmake](tics/arch/msp430x/msp430-toolchain-ws.cmake) such that the correct paths are configured for GCC, LLVM, libraries and the support files.
-This can be done by changing all the paths starting with `/home/user`.
+Modify the CMake target configuration file [tics/arch/msp430x/msp430-toolchain-ws.cmake](tics/arch/msp430x/msp430-toolchain-ws.cmake) such that the correct paths are configured for GCC, LLVM, libraries and the support files. This can be done by changing all the paths starting with `/home/user`.
 
 **Build commands:**
 ```bash
@@ -81,6 +80,9 @@ $ make
 ```
 
 ## Paper
+
+To cite the paper where TICS is being introduced please use the following LaTeX bibitem.
+
 ```
 @inproceedings{kortbeek_asplos2020,
     author = "Vito {Kortbeek} and Kasim Sinan {Yildirim} and Abu {Bakar} and Jacob {Sorber}
