@@ -72,6 +72,21 @@ $ ./setup.sh
 From Texas Instruments website download and extract the [MSP430 GCC support files](http://software-dl.ti.com/msp430/msp430_public_sw/mcu/msp430/MSPGCC/latest/exports/msp430-gcc-support-files-1.208.zip).
 
 
+### Building Source Instrumentation Tool
+The source instrumentation tool is located in [tics/source-instrumentation/memory-log-instrumentation](tics/source-instrumentation/memory-log-instrumentation/).
+This tool is used to instrument global variable and pointer writes.
+
+**Build commands**:
+```bash
+$ cd tics/source-instrumentation/memory-log-instrumentation
+$ mkdir build
+$ cd build
+$ cmake ../
+$ make
+```
+Optionally tests can be run using `runtest.sh`.
+
+
 ### Building C Code
 **Path setup**
 Modify the CMake target configuration file [tics/arch/msp430x/msp430-toolchain-ws.cmake](tics/arch/msp430x/msp430-toolchain-ws.cmake) such that the correct paths are configured for GCC, LLVM, libraries and the support files. This can be done by changing all the paths starting with `/home/user`.
@@ -83,6 +98,14 @@ $ ./configure
 $ cd build
 $ make
 ```
+
+### Benchmarks
+The benchmarks are located in [tics/test/functional/checkpoint](tics/test/functional/checkpoint).
+Building the C code will also generate `.elf` files for the benchmarks.
+Transformation of the C code to the instrumented version that includes memory logging is done using the source instrumentation tool describe above (`memlog`).
+The benchmarks where uploaded using [Code Composer Studio (CCS)](http://www.ti.com/tool/CCSTUDIO).
+Benchmark timings where started after the system initialization (`init()`) and where run until the end of the benchmarks (before result validation and the summary of the run).
+The time was measured using hardware breakpoints and the build in cycle counter.
 
 ## Paper
 
