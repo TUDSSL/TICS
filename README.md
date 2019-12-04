@@ -14,21 +14,6 @@ The main components of TICS are:
 ```bash
 ├── llvm-tics (modified LLVM compiler)
 ├── msp430-gcc-tics (modified GCC compiler)
-└── tics (TICS runtime)
-    ├── arch
-    │   └── msp430x
-    │       ├── lib
-    │       └── llvm-workaround
-    ├── ext (external libraries)
-    ├── include
-    ├── source-instrumentation
-    │   └── memory-log-instrumentation
-    ├── src
-    └── test
-        └── functional (benchmarks)
-
-├── llvm-tics (modified LLVM compiler)
-├── msp430-gcc-tics (modified GCC compiler)
 ├── tics (TICS runtime)
 │   ├── arch
 │   │   └── msp430x
