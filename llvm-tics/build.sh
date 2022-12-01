@@ -3,14 +3,21 @@
 BASE_DIR=$(pwd)
 
 # Clone LLVM and Clang
-git clone https://github.com/llvm-mirror/llvm.git
+## Rather than git clone, a shallow clone is done as we are only interested in a specific commit
+mkdir llvm
 pushd llvm
-git reset --hard be2b2c32d38
+git init
+git remote add origin https://github.com/llvm-mirror/llvm.git
+git fetch --depth 1 origin be2b2c32d38ab91bfe59b53d0dea8c8404802013
+git checkout FETCH_HEAD
 popd
 
-git clone https://github.com/llvm-mirror/clang.git
+mkdir clang
 pushd clang
-git reset --hard 52ed5ec631
+git init
+git remote add origin https://github.com/llvm-mirror/clang.git
+git fetch --depth 1 origin 52ed5ec631b0bbf5c714baa0cd83c33ebfe0c6aa
+git checkout FETCH_HEAD
 popd
 
 # Copy Clang into LLVM
