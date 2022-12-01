@@ -3,12 +3,12 @@
 BASE_DIR=$(pwd)
 
 # Clone LLVM and Clang
-git clone http://llvm.org/git/llvm.git
+git clone https://github.com/llvm-mirror/llvm.git
 pushd llvm
 git reset --hard be2b2c32d38
 popd
 
-git clone http://llvm.org/git/clang.git
+git clone https://github.com/llvm-mirror/clang.git
 pushd clang
 git reset --hard 52ed5ec631
 popd
